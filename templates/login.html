@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Login | Hospital Booking System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(to right, #00bcd4, #0097a7);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-container {
+            background: #ffffff;
+            width: 380px;
+            padding: 40px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .login-container h2 {
+            margin-bottom: 20px;
+            color: #007b8f;
+            font-weight: 700;
+        }
+
+        .login-container p {
+            color: #555;
+            font-size: 0.9em;
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #007b8f;
+            font-weight: 500;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: #00bcd4;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 188, 212, 0.5);
+        }
+
+        .btn-login {
+            background-color: #00bcd4;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 25px;
+            width: 100%;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-login:hover {
+            background-color: #0097a7;
+        }
+
+        .footer-text {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .footer-text a {
+            color: #00bcd4;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer-text a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Welcome Back</h2>
+        <p>Log in to manage your appointments and health records.</p>
+
+        <form action="{{ url_for('login') }}" method="POST">
+            <div class="input-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email" required>
+            </div>
+
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            </div>
+
+            <button type="submit" class="btn-login">Log In</button>
+        </form>
+
+        <div class="footer-text">
+            Don’t have an account? <a href="{{ url_for('register') }}">Sign Up</a>
+        </div>
+    </div>
+</body>
+</html>

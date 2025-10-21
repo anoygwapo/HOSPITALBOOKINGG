@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Appointment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: url("{{ url_for('static', filename='hospital_bg.jpg') }}") no-repeat center center/cover;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 400px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        h2 {
+            text-align: center;
+        }
+        input, textarea, button {
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        a {
+            text-decoration: none;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Book an Appointment</h2>
+    <form method="POST">
+        <input type="text" name="name" placeholder="Full Name" required>
+        <input type="date" name="date" required>
+        <input type="time" name="time" required>
+        <textarea name="reason" placeholder="Reason for Appointment" required></textarea>
+        <button type="submit">Book Now</button>
+    </form>
+    <p style="text-align:center;">
+        <a href="{{ url_for('my_appointments') }}">View My Appointments</a> |
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </p>
+</div>
+</body>
+</html>

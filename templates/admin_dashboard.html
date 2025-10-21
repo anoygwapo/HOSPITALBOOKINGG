@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <style>
+    body {
+      background-color: #f4f6f9;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 50px;
+    }
+    table {
+      margin: auto;
+      width: 90%;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 12px;
+    }
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+    a, button {
+      text-decoration: none;
+      color: #007bff;
+    }
+    .btn {
+      border: none;
+      padding: 6px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      color: white;
+    }
+    .approve {
+      background-color: #28a745;
+    }
+    .decline {
+      background-color: #dc3545;
+    }
+  </style>
+</head>
+<body>
+  <h2>All Booked Appointments</h2>
+  <table>
+    <tr>
+      <th>Appointment ID</th>
+      <th>User ID</th>
+      <th>Name</th>
+      <th>Date</th>
+      <th>Time</th>
+      <th>Reason</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+    {% for a in appointments %}
+    <tr>
+      <td>{{ a.id }}</td>
+      <td>{{ a.user_id }}</td>
+      <td>{{ a.name }}</td>
+      <td>{{ a.date }}</td>
+      <td>{{ a.time }}</td>
+      <td>{{ a.reason }}</td>
+      <td>{{ a.status }}</td>
+      <td>
+        <form action="{{ url_for('approve_booking', id=a.id) }}" method="post" style="display:inline;">
+          <button type="submit" class="btn approve">Approve</button>
+        </form>
+        <form action="{{ url_for('decline_booking', id=a.id) }}" method="post" style="display:inline;">
+          <button type="submit" class="btn decline">Decline</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  <br>
+  <a href="{{ url_for('admin_logout') }}">Logout</a>
+</body>
+</html>
