@@ -1,83 +1,340 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Admin Dashboard</title>
-  <style>
+<meta charset="UTF-8">
+<title>Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<style>
+     * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
     body {
-      background-color: #f4f6f9;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 50px;
+        background: linear-gradient(135deg, #e3f0ff 0%, #f1e3ff 100%);
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+    }
+    .dashboard {
+        display: flex;
+        flex-direction: row;
+        max-width: 1400px;
+        margin: 40px auto;
+        box-shadow: 0 6px 24px 0px rgba(25,75,115,0.10);
+        border-radius: 20px;
+        background: white;
+        overflow: hidden;
+    }
+    .sidebar {
+        min-width: 260px;
+        background: linear-gradient(135deg, #007bff 90%, #0062cc 120%);
+        padding: 40px 20px 20px 20px;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .sidebar h2 {
+        font-size: 2rem;
+        margin: 0 0 36px 0;
+        letter-spacing: 2px;
+    }
+    .sidebar .logout {
+        background-color: #f44336;
+        color: white;
+        padding: 14px 0;
+        border-radius: 25px;
+        font-weight: 600;
+        text-align: center;
+        text-decoration: none;
+        margin-top: 60px;
+        transition: 0.2s;
+        display: block;
+    }
+    .sidebar .logout:hover { background-color: #c82333; }
+
+    .main-content {
+        flex: 1;
+        padding: 40px;
+    }
+    .section {
+        margin-bottom: 55px;
+    }
+    .section-title {
+        color: #1b2a47;
+        font-size: 1.6rem;
+        font-weight: 600;
+        text-align: left;
+        margin-bottom: 25px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #f0f2f5;
+        letter-spacing: 1px;
     }
     table {
-      margin: auto;
-      width: 90%;
-      border-collapse: collapse;
-      background: white;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        overflow: hidden;
     }
     th, td {
-      border: 1px solid #ccc;
-      padding: 12px;
+        padding: 18px 16px;
+        text-align: left;
+        font-size: 1rem;
+        vertical-align: middle;
     }
     th {
-      background-color: #007bff;
-      color: white;
+        background: #f5f8fc;
+        color: #007bff;
+        font-weight: 700;
+        border-bottom: 1px solid #eef2fa;
     }
-    a, button {
-      text-decoration: none;
-      color: #007bff;
+    tr:nth-child(even) td {
+        background: #f9fafc;
     }
+    tr {
+        transition: background 0.2s;
+    }
+    tr:hover td {
+        background: #e8f1ff;
+    }
+    .status {
+        font-weight: 600;
+        border-radius: 20px;
+        padding: 7px 18px;
+        display: inline-block;
+    }
+    .status.Pending { color: #856404; background: #fff3cd; }
+    .status.Approved { color: #155724; background: #d4edda;}
+    .status.Declined { color: #721c24; background: #f8d7da; }
+
     .btn {
-      border: none;
-      padding: 6px 12px;
-      border-radius: 5px;
-      cursor: pointer;
-      color: white;
+        border: none;
+        padding: 9px 22px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: 600;
+        color: white;
+        font-size: .98rem;
+        margin: 0 2px;
+        transition: .2s;
+        letter-spacing: .5px;
+        box-shadow: 0 2px 6px rgba(0,123,255,0.11);
     }
-    .approve {
-      background-color: #28a745;
+    .approve { background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%) }
+    .approve:hover { background: linear-gradient(90deg, #35c277 0%, #24d1cc 100%); }
+    .decline { background: linear-gradient(90deg, #ff5858 0%, #f09819 100%);}
+    .decline:hover { background: linear-gradient(90deg, #e14646 0%, #c77719 100%)}
+    @media (max-width: 900px) {
+        .dashboard { flex-direction: column; }
+        .sidebar { min-width: 100%; padding: 20px;}
+        .main-content { padding: 20px;}
     }
-    .decline {
-      background-color: #dc3545;
+    @media (max-width: 600px) {
+        th, td { padding: 9px 4px; font-size: .95rem;}
+        .section-title { font-size: 1.18rem; }
     }
-  </style>
+
+    /* Reuse modal and add-doctor styles (unchanged) */
+    .modal-bg { display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.30); justify-content:center; align-items:center; z-index:99; }
+    .modal-bg.active { display:flex; }
+    .modal-content { background:#fff; border-radius:18px; max-width:470px; width:95vw; padding:2rem 2rem 1.4rem 2rem; box-shadow:0 4px 32px rgba(0,0,0,0.13); position:relative; animation:slideDown .22s ease; }
+    @keyframes slideDown { from { transform:translateY(-50px); opacity:.6;} to { transform:translateY(0); opacity:1;} }
+    .modal-close { position:absolute; top:18px; right:18px; background:#eee; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; cursor:pointer; border:none; }
+    .modal-h { color:#007bff; margin-top:0; margin-bottom:12px; font-size:1.14rem; letter-spacing:.7px; }
+
+    .add-doctor-btn {
+        background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 12px 32px;
+        font-weight: 600;
+        font-size: 1.07rem;
+        margin-bottom: 22px;
+        cursor: pointer;
+        transition: .2s;
+        box-shadow: 0 2px 8px rgba(67,233,123,0.13);
+        letter-spacing: .6px;
+    }
+    .add-doctor-btn:hover { background: linear-gradient(90deg, #35c277 0%, #24d1cc 100%); }
+</style>
 </head>
 <body>
-  <h2>All Booked Appointments</h2>
-  <table>
-    <tr>
-      <th>Appointment ID</th>
-      <th>User ID</th>
-      <th>Name</th>
-      <th>Date</th>
-      <th>Time</th>
-      <th>Reason</th>
-      <th>Status</th>
-      <th>Action</th>
-    </tr>
-    {% for a in appointments %}
-    <tr>
-      <td>{{ a.id }}</td>
-      <td>{{ a.user_id }}</td>
-      <td>{{ a.name }}</td>
-      <td>{{ a.date }}</td>
-      <td>{{ a.time }}</td>
-      <td>{{ a.reason }}</td>
-      <td>{{ a.status }}</td>
-      <td>
-        <form action="{{ url_for('approve_booking', id=a.id) }}" method="post" style="display:inline;">
-          <button type="submit" class="btn approve">Approve</button>
+
+<div class="dashboard">
+    <aside class="sidebar">
+        <div>
+            <h2>Admin</h2>
+            <div><span style="opacity:.8;font-weight:600;letter-spacing:1px;">Dashboard</span></div>
+        </div>
+        <a class="logout" href="{{ url_for('admin_logout') }}">Logout</a>
+    </aside>
+
+    <main class="main-content">
+        <!-- ALL BOOKINGS -->
+        <section class="section">
+            <div class="section-title">All Booked Appointments</div>
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+                {% for a in appointments %}
+                <tr>
+                    <td>{{ a.id }}</td>
+                    <td>{{ a.name }}</td>
+                    <td>{{ a.doctor.name }} ({{ a.doctor.specialization }})</td>
+                    <td>{{ a.date }}</td>
+                    <td>{{ a.time }}</td>
+                    <td>{{ a.reason }}</td>
+                    <td><span class="status {{ a.status }}">{{ a.status }}</span></td>
+                    <td>
+                        {% if a.status == 'Pending' %}
+                        <form action="{{ url_for('approve_booking', id=a.id) }}" method="post" style="display:inline;">
+                            <button type="submit" class="btn approve">Approve</button>
+                        </form>
+                        <form action="{{ url_for('decline_booking', id=a.id) }}" method="post" style="display:inline;">
+                            <button type="submit" class="btn decline">Decline</button>
+                        </form>
+                        {% else %}
+                        <span style="font-weight:600;">{{ a.status }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </section>
+
+        <!-- APPROVED BOOKINGS -->
+        <section class="section">
+            <div class="section-title">Approved Bookings</div>
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Reason</th>
+                </tr>
+                {% for a in appointments if a.status == 'Approved' %}
+                <tr>
+                    <td>{{ a.id }}</td>
+                    <td>{{ a.name }}</td>
+                    <td>{{ a.doctor.name }} ({{ a.doctor.specialization }})</td>
+                    <td>{{ a.date }}</td>
+                    <td>{{ a.time }}</td>
+                    <td>{{ a.reason }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </section>
+
+        <!-- AVAILABLE DOCTORS -->
+        <section class="section">
+            <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;">
+                <span>Available Doctors</span>
+                <button class="add-doctor-btn" id="openAddDoctorBtn">+ Add Doctor</button>
+            </div>
+            <table id="doctors-table">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Specialization</th>
+                    <th>Schedule</th>
+                </tr>
+                {% for d in doctors %}
+                <tr class="doctor-row" data-doctor-id="{{ d.id }}">
+                    <td>{{ d.id }}</td>
+                    <td>{{ d.name }}</td>
+                    <td>{{ d.specialization }}</td>
+                    <td>{{ d.schedule }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </section>
+    </main>
+</div>
+
+<!-- Doctor Info Modal -->
+<div class="modal-bg" id="doctorModal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+        <div id="modalInfo"></div>
+        <div class="modal-bookings" id="modalBookings"></div>
+    </div>
+</div>
+
+<!-- Add Doctor Modal -->
+<div class="modal-bg" id="addDoctorModal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeAddDoctorModal()">&times;</button>
+        <h3 class="modal-h">Add New Doctor</h3>
+        <form action="{{ url_for('register_doctor') }}" method="post">
+            <label for="doctorName">Name</label>
+            <input id="doctorName" name="name" required>
+
+            <label for="doctorSpecialization">Specialization</label>
+            <input id="doctorSpecialization" name="specialization" required>
+
+            <label for="doctorSchedule">Schedule</label>
+            <input id="doctorSchedule" name="schedule" required>
+
+            <button type="submit">Add Doctor</button>
         </form>
-        <form action="{{ url_for('decline_booking', id=a.id) }}" method="post" style="display:inline;">
-          <button type="submit" class="btn decline">Decline</button>
-        </form>
-      </td>
-    </tr>
-    {% endfor %}
-  </table>
-  <br>
-  <a href="{{ url_for('admin_logout') }}">Logout</a>
+    </div>
+</div>
+
+<script>
+    const doctors = [
+        {% for doc in doctors %}
+        { id: `{{ doc.id }}`, name: `{{ doc.name }}`, specialization: `{{ doc.specialization }}`, schedule: `{{ doc.schedule }}` },
+        {% endfor %}
+    ];
+    const appointments = [
+        {% for a in appointments %}
+        { id: `{{ a.id }}`, name: `{{ a.name }}`, doctorId: `{{ a.doctor.id }}`, doctorName: `{{ a.doctor.name }}`, date: `{{ a.date }}`, time: `{{ a.time }}`, reason: `{{ a.reason }}`, status: `{{ a.status }}` },
+        {% endfor %}
+    ];
+    document.querySelectorAll('.doctor-row').forEach(row => {
+        row.onclick = function() {
+            const docId = row.getAttribute('data-doctor-id');
+            showDoctorModal(docId);
+        };
+    });
+    function showDoctorModal(docId) {
+        const doc = doctors.find(d => d.id == docId);
+        if (!doc) return;
+        document.getElementById('modalInfo').innerHTML = `
+            <h3 class="modal-h">${doc.name}</h3>
+            <div class="modal-p"><b>Specialization:</b> ${doc.specialization}<br><b>Schedule:</b> ${doc.schedule}</div>
+        `;
+        const bookings = appointments.filter(a => a.doctorId == docId);
+        let bookingsHTML = '';
+        if (bookings.length === 0) {
+            bookingsHTML = '<em>No previous bookings found.</em>';
+        } else {
+            bookingsHTML = `<table><tr><th>#</th><th>Patient</th><th>Date</th><th>Time</th><th>Reason</th><th>Status</th></tr>`;
+            bookings.forEach(b => {
+                bookingsHTML += `<tr><td>${b.id}</td><td>${b.name}</td><td>${b.date}</td><td>${b.time}</td><td>${b.reason}</td><td>${b.status}</td></tr>`;
+            });
+            bookingsHTML += `</table>`;
+        }
+        document.getElementById('modalBookings').innerHTML = bookingsHTML;
+        document.getElementById('doctorModal').classList.add('active');
+    }
+    function closeModal() { document.getElementById('doctorModal').classList.remove('active'); }
+    document.getElementById('doctorModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+    document.getElementById('openAddDoctorBtn').onclick = function() { document.getElementById('addDoctorModal').classList.add('active'); }
+    function closeAddDoctorModal() { document.getElementById('addDoctorModal').classList.remove('active'); }
+    document.getElementById('addDoctorModal').addEventListener('click', function(e){ if (e.target === this) closeAddDoctorModal(); });
+</script>
 </body>
 </html>

@@ -1,92 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>My Appointments</title>
-  <style>
+<meta charset="UTF-8">
+<title>My Appointments</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<style>
+    * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
     body {
-      background-color: #f4f6f9;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 50px;
+        background: linear-gradient(135deg, #e3f0ff 0%, #f1e3ff 100%);
+        margin: 0; padding: 0;
+        min-height: 100vh;
+        display: flex; flex-direction: column; align-items: center; padding: 40px 10px;
     }
     h2 {
-      color: #007bff;
+        color: #007bff;
+        margin-bottom: 30px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-align: center;
     }
     table {
-      margin: 30px auto;
-      width: 90%;
-      border-collapse: collapse;
-      background-color: white;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        width: 90%;
+        border-collapse: separate;
+        border-spacing: 0;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        background: white;
+        margin-bottom: 20px;
+        transition: transform 0.2s ease;
     }
+    table:hover { transform: translateY(-3px); }
     th, td {
-      border: 1px solid #ccc;
-      padding: 12px;
+        padding: 14px 12px;
+        text-align: left;
+        font-size: 0.95rem;
     }
     th {
-      background-color: #007bff;
-      color: white;
+        background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+        color: white;
+        font-weight: 600;
     }
-    tr:nth-child(even) {
-      background-color: #f2f2f2;
+    tr:nth-child(even) td { background: #f9fafc; }
+    tr:hover td { background: #e8f1ff; }
+
+    .status {
+        font-weight: 600;
+        border-radius: 20px;
+        padding: 5px 12px;
+        display: inline-block;
     }
-    a {
-      text-decoration: none;
-      color: #007bff;
-    }
-    a:hover {
-      text-decoration: underline;
-    }
+    .status.Pending { color: #856404; background: #fff3cd; }
+    .status.Approved { color: #155724; background: #d4edda;}
+    .status.Declined { color: #721c24; background: #f8d7da; }
+
     .btn {
-      display: inline-block;
-      background-color: #007bff;
-      color: white;
-      padding: 10px 20px;
-      border-radius: 8px;
-      text-decoration: none;
-      margin-top: 20px;
+        display: inline-block;
+        padding: 8px 15px;
+        border-radius: 20px;
+        text-decoration: none;
+        font-weight: 600;
+        color: white;
+        background: linear-gradient(90deg, #007bff 0%, #0056b3 100%);
+        transition: all 0.3s;
+        cursor: pointer;
     }
-    .btn:hover {
-      background-color: #0056b3;
+    .btn:hover { transform: translateY(-2px); background: linear-gradient(90deg, #0056b3 0%, #003d80 100%); }
+
+    .cancel-btn {
+        background: linear-gradient(90deg, #ff5858 0%, #f09819 100%);
     }
-  </style>
+    .cancel-btn:hover { background: linear-gradient(90deg, #e14646 0%, #c77719 100%); }
+
+    .links {
+        margin-top: 15px;
+        font-size: 0.95rem;
+        text-align: center;
+    }
+    .links a {
+        color: #007bff;
+        text-decoration: none;
+        margin: 0 10px;
+        transition: all 0.3s;
+    }
+    .links a:hover { text-decoration: underline; color: #0056b3; }
+</style>
 </head>
 <body>
-  <h2>My Appointments</h2>
+<h2>📋 My Appointments</h2>
 
-  {% if appointments %}
-  <table>
-  <tr>
+{% if appointments %}
+<table>
+<tr>
     <th>ID</th>
     <th>Name</th>
+    <th>Doctor</th>
     <th>Date</th>
     <th>Time</th>
     <th>Reason</th>
+    <th>Status</th>
     <th>Action</th>
-  </tr>
-  {% for a in appointments %}
-  <tr>
+</tr>
+{% for a in appointments %}
+<tr>
     <td>{{ a.id }}</td>
     <td>{{ a.name }}</td>
+    <td>{{ a.doctor.name }} ({{ a.doctor.specialization }})</td>
     <td>{{ a.date }}</td>
     <td>{{ a.time }}</td>
     <td>{{ a.reason }}</td>
+    <td><span class="status {{ a.status }}">{{ a.status }}</span></td>
     <td>
-      <a href="{{ url_for('cancel_appointment', id=a.id) }}"
-         class="btn"
-         style="background-color: #dc3545;">Cancel</a>
+        {% if a.status == 'Pending' %}
+        <a href="{{ url_for('cancel_appointment', id=a.id) }}" class="btn cancel-btn">Cancel</a>
+        {% else %}
+        <span style="color:gray;">Locked</span>
+        {% endif %}
     </td>
-  </tr>
-  {% endfor %}
+</tr>
+{% endfor %}
 </table>
+{% else %}
+<p>You have no appointments yet.</p>
+{% endif %}
 
-  {% else %}
-  <p>You have no appointments yet.</p>
-  {% endif %}
-
-  <a class="btn" href="{{ url_for('book_appointment') }}">Book Another Appointment</a>
-  <br><br>
-  <a href="{{ url_for('logout') }}">Logout</a>
+<div class="links">
+    <a class="btn" href="{{ url_for('book_appointment') }}">Book Another Appointment</a>
+    <br><br>
+    <a href="{{ url_for('dashboard') }}">Back to Dashboard</a> |
+    <a href="{{ url_for('logout') }}">Logout</a>
+</div>
 </body>
 </html>

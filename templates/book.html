@@ -1,61 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Book Appointment</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: url("{{ url_for('static', filename='hospital_bg.jpg') }}") no-repeat center center/cover;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            width: 400px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-        h2 {
-            text-align: center;
-        }
-        input, textarea, button {
-            width: 100%;
-            margin: 10px 0;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-        }
-        button {
-            background-color: #28a745;
-            color: white;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #218838;
-        }
-        a {
-            text-decoration: none;
-            color: #007bff;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Book Appointment</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<style>
+    * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+    body {
+        background: linear-gradient(135deg, #e3f0ff 0%, #f1e3ff 100%);
+        margin:0; padding:0;
+        display:flex; justify-content:center; align-items:center; min-height:100vh;
+    }
+
+    .container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+        width: 450px;
+        padding: 35px 30px;
+        transition: transform 0.3s ease;
+    }
+    .container:hover { transform: translateY(-5px); }
+
+    h2 {
+        text-align: center;
+        color: #007bff;
+        margin-bottom: 25px;
+        font-weight: 600;
+        letter-spacing: 1px;
+    }
+
+    form input, form select, form textarea {
+        width: 100%;
+        padding: 14px;
+        margin: 12px 0;
+        border: 1px solid #ccc;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s;
+    }
+    form input:focus, form select:focus, form textarea:focus {
+        border-color: #007bff;
+        outline: none;
+        box-shadow: 0 0 10px rgba(0,123,255,0.25);
+        transform: scale(1.02);
+    }
+
+    button {
+        width: 100%;
+        padding: 14px;
+        margin-top: 15px;
+        border: none;
+        border-radius: 25px;
+        background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+        color: white;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(67,233,123,0.25);
+    }
+    button:hover {
+        background: linear-gradient(90deg, #35c277 0%, #24d1cc 100%);
+        transform: translateY(-3px);
+    }
+
+    p.links {
+        text-align: center;
+        margin-top: 18px;
+        font-size: 0.95rem;
+    }
+    p.links a {
+        color: #007bff;
+        text-decoration: none;
+        margin: 0 8px;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+    p.links a:hover {
+        text-decoration: underline;
+        color: #0056b3;
+    }
+
+    select option {
+        padding: 10px;
+    }
+</style>
 </head>
 <body>
 <div class="container">
-    <h2>Book an Appointment</h2>
+    <h2>📅 Book an Appointment</h2>
     <form method="POST">
         <input type="text" name="name" placeholder="Full Name" required>
+
+        <select name="doctor_id" required>
+            <option value="">Select Doctor</option>
+            {% for d in doctors %}
+                <option value="{{ d.id }}">{{ d.name }} — {{ d.specialization }} ({{ d.schedule }})</option>
+            {% endfor %}
+        </select>
+
         <input type="date" name="date" required>
         <input type="time" name="time" required>
         <textarea name="reason" placeholder="Reason for Appointment" required></textarea>
+
         <button type="submit">Book Now</button>
     </form>
-    <p style="text-align:center;">
-        <a href="{{ url_for('my_appointments') }}">View My Appointments</a> |
+
+    <p class="links">
+        <a href="{{ url_for('my_appointments') }}">My Appointments</a> |
+        <a href="{{ url_for('dashboard') }}">Dashboard</a> |
         <a href="{{ url_for('logout') }}">Logout</a>
     </p>
 </div>
