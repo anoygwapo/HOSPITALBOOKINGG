@@ -1,8 +1,25 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.utils import secure_filename
+import os
 
+# -----------------------------
+# APP SETUP
+# -----------------------------
 app = Flask(__name__)
 app.secret_key = 'hospital_secret_key'
+
+# -----------------------------
+# UPLOAD CONFIG
+# -----------------------------
+UPLOAD_FOLDER = 'static/uploads'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # -----------------------------
 # DATABASE SETUP
@@ -27,6 +44,7 @@ class Doctor(db.Model):
     specialization = db.Column(db.String(100), nullable=False)
     schedule = db.Column(db.String(100), nullable=False)
     status = db.Column(db.String(50), default='Available')
+    photo = db.Column(db.String(200), nullable=True)  # path relative to static/
 
 class Appointment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -56,7 +74,6 @@ def admin_login():
         username = request.form['username']
         password = request.form['password']
 
-        # Static admin credentials
         if username == 'admin' and password == 'admin123':
             session['admin'] = True
             flash('Admin login successful!', 'success')
@@ -87,11 +104,21 @@ def register_doctor():
         name = request.form['name']
         specialization = request.form['specialization']
         schedule = request.form['schedule']
+        photo_file = request.files.get('photo')
+        photo_filename = None
+
+        if photo_file and photo_file.filename != '':
+            filename = secure_filename(photo_file.filename)
+            upload_folder = os.path.join(app.root_path, 'static', 'uploads')
+            os.makedirs(upload_folder, exist_ok=True)
+            photo_file.save(os.path.join(upload_folder, filename))
+            photo_filename = f'uploads/{filename}'  # store relative path in DB
 
         new_doctor = Doctor(
             name=name,
             specialization=specialization,
-            schedule=schedule
+            schedule=schedule,
+            photo=photo_filename
         )
         db.session.add(new_doctor)
         db.session.commit()
@@ -215,7 +242,7 @@ def book_appointment():
         new_appointment = Appointment(
             user_id=user.id,
             doctor_id=doctor_id,
-            name=user.fullname,  # Auto-fill user's name
+            name=user.fullname,
             date=date,
             time=time,
             reason=reason
@@ -224,25 +251,9 @@ def book_appointment():
         db.session.commit()
 
         flash('Appointment booked successfully!', 'success')
-        return redirect(url_for('my_appointments'))
+        return redirect(url_for('dashboard'))
 
     return render_template('book.html', doctors=doctors, user=user)
-
-@app.route('/cancel/<int:id>')
-def cancel_appointment(id):
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-
-    appointment = Appointment.query.get_or_404(id)
-
-    if appointment.user_id != session['user_id']:
-        flash('You are not authorized to cancel this appointment.')
-        return redirect(url_for('my_appointments'))
-
-    db.session.delete(appointment)
-    db.session.commit()
-    flash('Appointment canceled successfully!')
-    return redirect(url_for('my_appointments'))
 
 @app.route('/my_appointments')
 def my_appointments():
@@ -250,8 +261,62 @@ def my_appointments():
         flash('Please log in first.', 'warning')
         return redirect(url_for('login'))
 
-    appointments = Appointment.query.filter_by(user_id=session['user_id']).all()
-    return render_template('my_appointments.html', appointments=appointments)
+    # Get the user object
+    user = User.query.get(session['user_id'])
+
+    # Get their appointments
+    appointments = Appointment.query.filter_by(user_id=user.id).all()
+
+    # Pass both user and appointments to the template
+    return render_template('my_appointments.html', user=user, appointments=appointments)
+@app.route('/appointment/<int:id>')
+def view_appointment(id):
+    # Fetch appointment from database by id
+    appointment = Appointment.query.get_or_404(id)
+    return render_template('view_appointment.html', appointment=appointment)
+
+@app.route('/cancel/<int:id>')
+def cancel_appointment(id):
+    # Find the appointment by id and cancel it
+    appointment = Appointment.query.get_or_404(id)
+    appointment.status = "Declined"
+    db.session.commit()
+    flash("Appointment canceled successfully.", "success")
+    return redirect(url_for('my_appointments'))
+
+@app.route('/admin/doctor/<int:id>/edit', methods=['GET', 'POST'])
+def edit_doctor(id):
+    doctor = Doctor.query.get_or_404(id)
+
+    if request.method == 'POST':
+        # Update doctor info
+        doctor.name = request.form['name']
+        doctor.specialization = request.form['specialization']
+        doctor.schedule = request.form['schedule']
+
+        # Handle photo upload
+        if 'photo' in request.files and request.files['photo'].filename != '':
+            photo_file = request.files['photo']
+            filename = secure_filename(photo_file.filename)
+            photo_file.save(f'static/uploads/{filename}')
+            doctor.photo = f'uploads/{filename}'
+
+        db.session.commit()
+        flash('Doctor updated successfully!', 'success')
+        return redirect(url_for('admin_dashboard'))
+
+    # GET request -> render edit form
+    return render_template('edit_doctor.html', doctor=doctor)
+
+
+@app.route('/admin/doctor/<int:id>/delete', methods=['POST'])
+def delete_doctor(id):
+    doctor = Doctor.query.get_or_404(id)
+    db.session.delete(doctor)
+    db.session.commit()
+    flash('Doctor deleted successfully!', 'success')
+    return redirect(url_for('admin_dashboard'))
+
 
 @app.route('/logout')
 def logout():
@@ -264,20 +329,19 @@ def about():
     return render_template('about.html')
 
 # -----------------------------
-# AUTO-SEED DOCTORS & RUN APP
+# AUTO-SEED DOCTORS
 # -----------------------------
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
 
-        # Auto-add sample doctors if none exist
         if not Doctor.query.first():
             doctors = [
-                Doctor(name='Dr. Maria Santos', specialization='Pediatrics', schedule='Mon-Fri, 9AM-4PM'),
-                Doctor(name='Dr. John Dela Cruz', specialization='Cardiology', schedule='Tue-Thu, 10AM-3PM'),
-                Doctor(name='Dr. Ana Reyes', specialization='Dermatology', schedule='Mon-Wed, 8AM-2PM')
+                Doctor(name='Dr. Maria Santos', specialization='Pediatrics', schedule='Mon-Fri, 9AM-4PM', photo=None),
+                Doctor(name='Dr. John Dela Cruz', specialization='Cardiology', schedule='Tue-Thu, 10AM-3PM', photo=None),
+                Doctor(name='Dr. Ana Reyes', specialization='Dermatology', schedule='Mon-Wed, 8AM-2PM', photo=None)
             ]
             db.session.add_all(doctors)
             db.session.commit()
 
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

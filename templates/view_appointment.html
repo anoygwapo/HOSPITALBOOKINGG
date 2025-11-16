@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>My Appointments — HospitalCare</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg: #f4fbff;
+      --card: #fff;
+      --muted: #6b7280;
+      --primary: #0466c8;
+      --accent: #00b4d8;
+      --success: #2bb673;
+      --warning: #f6b24a;
+      --danger: #e04848;
+      --radius: 12px;
+      --shadow: 0 10px 30px rgba(6,78,163,0.06);
+      --max-width:1100px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,var(--bg),#fbfeff);color:#042235;-webkit-font-smoothing:antialiased}
+    a{color:inherit;text-decoration:none}
+
+    .page{min-height:100vh;display:flex;justify-content:center;padding:28px 18px}
+    .wrap{width:100%;max-width:var(--max-width)}
+
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+    header h2{margin:0;color:var(--primary);font-size:1.15rem}
+    header .actions{display:flex;gap:10px}
+
+    .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:16px;border:1px solid rgba(6,78,163,0.04)}
+
+    /* Table for wide screens */
+    .table-wrap{overflow:auto;border-radius:12px}
+    table{width:100%;border-collapse:separate;border-spacing:0;min-width:900px}
+    thead th{background:linear-gradient(90deg,var(--accent),var(--primary));color:#fff;padding:12px 14px;font-weight:700;text-align:left;font-size:0.95rem;position:sticky;top:0}
+    tbody td{padding:12px 14px;border-bottom:1px solid #f1f5f9;background:linear-gradient(180deg,#fff,#fbfdff);font-size:0.95rem;color:#0b2a44}
+    tbody tr:hover td{background:#f1f8ff}
+
+    .status{
+      display:inline-block;padding:6px 10px;border-radius:999px;font-weight:700;font-size:0.85rem;
+    }
+    .status.Pending{background:rgba(246,178,74,0.12);color:var(--warning)}
+    .status.Approved{background:rgba(43,182,115,0.12);color:var(--success)}
+    .status.Declined{background:rgba(224,72,72,0.08);color:var(--danger)}
+
+    .btn{
+      display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--primary),var(--accent));color:#fff;font-weight:700;cursor:pointer;
+      transition:transform .14s ease,box-shadow .14s ease;
+    }
+    .btn:active{transform:translateY(1px)}
+    .btn.ghost{background:transparent;color:var(--primary);border:1px solid rgba(6,78,163,0.06)}
+    .btn.danger{background:linear-gradient(90deg,#ff6b6b,#ff8a4a)}
+
+    /* Responsive card list for small screens */
+    .list{display:none;flex-direction:column;gap:10px}
+    .appt-card{display:flex;flex-direction:column;gap:8px;padding:14px;border-radius:12px;border:1px solid rgba(6,78,163,0.04);background:linear-gradient(180deg,#fff,#fbfdff)}
+    .appt-row{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .appt-left{display:flex;flex-direction:column;gap:6px}
+    .appt-right{display:flex;gap:8px;align-items:center}
+
+    /* Links area */
+    .links{text-align:center;margin-top:10px;font-size:0.95rem;color:var(--muted)}
+    .links a{color:var(--primary);font-weight:600;margin:0 8px}
+
+    @media (max-width:900px){
+      table{min-width:0}
+      .table-wrap{display:none}
+      .list{display:flex}
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="wrap">
+
+      <header>
+        <h2>📋 My Appointments</h2>
+        <div class="actions">
+          <a class="btn ghost" href="{{ url_for('dashboard') }}">← Dashboard</a>
+          <a class="btn" href="{{ url_for('book_appointment') }}">+ Book Appointment</a>
+        </div>
+      </header>
+
+      <div class="card">
+        {% if appointments %}
+        <!-- Desktop Table -->
+        <div class="table-wrap" role="region" aria-label="Appointments table">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:60px">ID</th>
+                <th>Name</th>
+                <th>Doctor</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Reason</th>
+                <th style="width:120px">Status</th>
+                <th style="width:140px">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for a in appointments %}
+              <tr>
+                <td>{{ a.id }}</td>
+                <td>{{ a.name }}</td>
+                <td>{{ a.doctor.name }} <span style="color:var(--muted)">({{ a.doctor.specialization }})</span></td>
+                <td>{{ a.date }}</td>
+                <td>{{ a.time }}</td>
+                <td>{{ a.reason }}</td>
+                <td><span class="status {{ a.status }}">{{ a.status }}</span></td>
+                <td>
+                  <div style="display:flex;gap:8px;align-items:center">
+                    <a class="btn ghost" href="{{ url_for('view_appointment', id=a.id) }}">View</a>
+
+                    {% if a.status == 'Pending' %}
+                      <form method="post" action="{{ url_for('cancel_appointment', id=a.id) }}" style="display:inline;" onsubmit="return confirm('Cancel this appointment?');">
+                        {% if csrf_token is defined %}
+                          {{ csrf_token() }}
+                        {% endif %}
+                        <button type="submit" class="btn danger">Cancel</button>
+                      </form>
+                    {% else %}
+                      <span style="color:var(--muted);font-weight:600">Locked</span>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile List -->
+        <div class="list" aria-live="polite">
+          {% for a in appointments %}
+          <article class="appt-card" aria-label="Appointment {{ a.id }}">
+            <div class="appt-row">
+              <div class="appt-left">
+                <div style="font-weight:700;color:var(--primary)">{{ a.doctor.name }} <span style="color:var(--muted);font-weight:600">({{ a.doctor.specialization }})</span></div>
+                <div style="color:var(--muted)">{{ a.date }} • {{ a.time }}</div>
+              </div>
+              <div class="appt-right">
+                <span class="status {{ a.status }}">{{ a.status }}</span>
+              </div>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+              <div style="color:#0b2a44">{{ a.reason }}</div>
+              <div style="display:flex;gap:8px">
+                <a class="btn ghost" href="{{ url_for('view_appointment', id=a.id) }}">View</a>
+
+                {% if a.status == 'Pending' %}
+                  <form method="post" action="{{ url_for('cancel_appointment', id=a.id) }}" style="display:inline;" onsubmit="return confirm('Cancel this appointment?');">
+                    {% if csrf_token is defined %}
+                      {{ csrf_token() }}
+                    {% endif %}
+                    <button type="submit" class="btn danger">Cancel</button>
+                  </form>
+                {% else %}
+                  <span style="color:var(--muted);font-weight:600">Locked</span>
+                {% endif %}
+              </div>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+
+        {% else %}
+        <div style="text-align:center;padding:40px;color:var(--muted)">
+          <p style="font-size:1rem;margin:0 0 12px 0">You have no appointments yet.</p>
+          <a class="btn" href="{{ url_for('book_appointment') }}">Book your first appointment</a>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="links">
+        <a href="{{ url_for('dashboard') }}">Back to Dashboard</a> ·
+        <a href="{{ url_for('logout') }}">Logout</a>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // small accessibility + progressive enhancement helpers
+    (function(){
+      // confirm dialogs are handled via onsubmit inline attributes; optionally add keyboard accessibility helpers here
+      // reduce motion respect
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.querySelectorAll('*').forEach(el => el.style.transition = 'none');
+      }
+    })();
+  </script>
+</body>
+</html>

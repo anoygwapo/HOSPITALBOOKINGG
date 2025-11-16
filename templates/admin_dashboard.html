@@ -1,340 +1,238 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Admin Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-<style>
-     * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-    body {
-        background: linear-gradient(135deg, #e3f0ff 0%, #f1e3ff 100%);
-        margin: 0;
-        padding: 0;
-        min-height: 100vh;
-    }
-    .dashboard {
-        display: flex;
-        flex-direction: row;
-        max-width: 1400px;
-        margin: 40px auto;
-        box-shadow: 0 6px 24px 0px rgba(25,75,115,0.10);
-        border-radius: 20px;
-        background: white;
-        overflow: hidden;
-    }
-    .sidebar {
-        min-width: 260px;
-        background: linear-gradient(135deg, #007bff 90%, #0062cc 120%);
-        padding: 40px 20px 20px 20px;
-        color: white;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-    .sidebar h2 {
-        font-size: 2rem;
-        margin: 0 0 36px 0;
-        letter-spacing: 2px;
-    }
-    .sidebar .logout {
-        background-color: #f44336;
-        color: white;
-        padding: 14px 0;
-        border-radius: 25px;
-        font-weight: 600;
-        text-align: center;
-        text-decoration: none;
-        margin-top: 60px;
-        transition: 0.2s;
-        display: block;
-    }
-    .sidebar .logout:hover { background-color: #c82333; }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Dashboard — HospitalCare</title>
 
-    .main-content {
-        flex: 1;
-        padding: 40px;
-    }
-    .section {
-        margin-bottom: 55px;
-    }
-    .section-title {
-        color: #1b2a47;
-        font-size: 1.6rem;
-        font-weight: 600;
-        text-align: left;
-        margin-bottom: 25px;
-        padding-bottom: 10px;
-        border-bottom: 2px solid #f0f2f5;
-        letter-spacing: 1px;
-    }
-    table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        overflow: hidden;
-    }
-    th, td {
-        padding: 18px 16px;
-        text-align: left;
-        font-size: 1rem;
-        vertical-align: middle;
-    }
-    th {
-        background: #f5f8fc;
-        color: #007bff;
-        font-weight: 700;
-        border-bottom: 1px solid #eef2fa;
-    }
-    tr:nth-child(even) td {
-        background: #f9fafc;
-    }
-    tr {
-        transition: background 0.2s;
-    }
-    tr:hover td {
-        background: #e8f1ff;
-    }
-    .status {
-        font-weight: 600;
-        border-radius: 20px;
-        padding: 7px 18px;
-        display: inline-block;
-    }
-    .status.Pending { color: #856404; background: #fff3cd; }
-    .status.Approved { color: #155724; background: #d4edda;}
-    .status.Declined { color: #721c24; background: #f8d7da; }
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-    .btn {
-        border: none;
-        padding: 9px 22px;
-        border-radius: 20px;
-        cursor: pointer;
-        font-weight: 600;
-        color: white;
-        font-size: .98rem;
-        margin: 0 2px;
-        transition: .2s;
-        letter-spacing: .5px;
-        box-shadow: 0 2px 6px rgba(0,123,255,0.11);
-    }
-    .approve { background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%) }
-    .approve:hover { background: linear-gradient(90deg, #35c277 0%, #24d1cc 100%); }
-    .decline { background: linear-gradient(90deg, #ff5858 0%, #f09819 100%);}
-    .decline:hover { background: linear-gradient(90deg, #e14646 0%, #c77719 100%)}
-    @media (max-width: 900px) {
-        .dashboard { flex-direction: column; }
-        .sidebar { min-width: 100%; padding: 20px;}
-        .main-content { padding: 20px;}
-    }
-    @media (max-width: 600px) {
-        th, td { padding: 9px 4px; font-size: .95rem;}
-        .section-title { font-size: 1.18rem; }
+  <style>
+    :root{
+      --bg: #f4fbff;
+      --panel: #ffffff;
+      --muted: #6b7280;
+      --primary: #0466c8;
+      --accent: #00b4d8;
+      --success: #2bb673;
+      --danger: #e04848;
+      --warn: #f6b24a;
+      --radius: 12px;
+      --shadow-lg: 0 18px 50px rgba(6,78,163,0.08);
+      --shadow-sm: 0 8px 20px rgba(9,30,66,0.06);
+      --max-w:1300px;
     }
 
-    /* Reuse modal and add-doctor styles (unchanged) */
-    .modal-bg { display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.30); justify-content:center; align-items:center; z-index:99; }
-    .modal-bg.active { display:flex; }
-    .modal-content { background:#fff; border-radius:18px; max-width:470px; width:95vw; padding:2rem 2rem 1.4rem 2rem; box-shadow:0 4px 32px rgba(0,0,0,0.13); position:relative; animation:slideDown .22s ease; }
-    @keyframes slideDown { from { transform:translateY(-50px); opacity:.6;} to { transform:translateY(0); opacity:1;} }
-    .modal-close { position:absolute; top:18px; right:18px; background:#eee; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; cursor:pointer; border:none; }
-    .modal-h { color:#007bff; margin-top:0; margin-bottom:12px; font-size:1.14rem; letter-spacing:.7px; }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,var(--bg),#fbfeff);color:#062c52;-webkit-font-smoothing:antialiased}
 
-    .add-doctor-btn {
-        background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
-        color: white;
-        border: none;
-        border-radius: 20px;
-        padding: 12px 32px;
-        font-weight: 600;
-        font-size: 1.07rem;
-        margin-bottom: 22px;
-        cursor: pointer;
-        transition: .2s;
-        box-shadow: 0 2px 8px rgba(67,233,123,0.13);
-        letter-spacing: .6px;
+    .wrap{max-width:var(--max-w);margin:28px auto;padding:18px;display:grid;grid-template-columns:260px 1fr;gap:20px;align-items:start}
+    @media (max-width:980px){ .wrap{grid-template-columns:1fr;padding:12px} }
+
+    /* Sidebar */
+    .sidebar{
+      background:linear-gradient(180deg,var(--primary),var(--accent));
+      color:#fff;border-radius:var(--radius);padding:20px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:var(--shadow-lg)
     }
-    .add-doctor-btn:hover { background: linear-gradient(90deg, #35c277 0%, #24d1cc 100%); }
-</style>
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand .logo{width:48px;height:48px;border-radius:10px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px}
+    .brand h2{margin:0;font-size:1.15rem}
+    .sidebar .meta{margin-top:12px;color:rgba(255,255,255,0.92);font-size:0.94rem}
+    .nav{display:flex;flex-direction:column;gap:8px;margin-top:20px}
+    .nav a{color:rgba(255,255,255,0.95);text-decoration:none;padding:10px;border-radius:10px;font-weight:600}
+    .nav a:hover{background:rgba(255,255,255,0.06)}
+
+    .logout{display:inline-block;margin-top:18px;padding:10px;border-radius:999px;background:linear-gradient(90deg,#ff6b6b,#ff8a4a);color:#fff;text-align:center;text-decoration:none;font-weight:700}
+    .logout:hover{opacity:.95;transform:translateY(-1px)}
+
+    /* Main area */
+    .main{display:flex;flex-direction:column;gap:18px}
+    .topbar{display:flex;gap:12px;align-items:center;justify-content:space-between}
+    .topbar .search{flex:1;max-width:520px;display:flex;align-items:center;gap:8px}
+    .search input{flex:1;padding:10px 12px;border-radius:10px;border:1px solid #e6eef8;background:#fff;box-shadow:var(--shadow-sm)}
+    .actions{display:flex;gap:8px;align-items:center}
+
+    .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    @media (max-width:700px){ .stat-grid{grid-template-columns:repeat(2,1fr)} }
+
+    .stat{padding:14px;border-radius:12px;background:linear-gradient(180deg,#fff,#fbfdff);box-shadow:var(--shadow-sm);border:1px solid rgba(6,78,163,0.04)}
+    .stat .label{color:var(--muted);font-size:0.9rem}
+    .stat .value{font-weight:800;color:var(--primary);font-size:1.35rem;margin-top:6px}
+
+    /* Section card */
+    .card{background:var(--panel);border-radius:12px;padding:14px;border:1px solid rgba(6,78,163,0.04);box-shadow:var(--shadow-sm)}
+    .card h3{margin:0 0 8px 0;color:var(--primary);font-size:1.05rem}
+
+    /* Table styles */
+    .table-wrap{overflow:auto;border-radius:10px}
+    table{width:100%;border-collapse:collapse;min-width:920px}
+    thead th{background:linear-gradient(90deg,var(--accent),var(--primary));color:#fff;padding:12px 14px;text-align:left;font-weight:700;position:sticky;top:0}
+    tbody td{padding:12px 14px;border-bottom:1px solid #f1f5f9;background:linear-gradient(180deg,#fff,#fbfdff);color:#062c52}
+    tbody tr:hover td{background:#f1f8ff}
+    .status{display:inline-block;padding:6px 10px;border-radius:999px;font-weight:700;font-size:0.85rem}
+    .status.Pending{background:rgba(246,178,74,0.10);color:var(--warn)}
+    .status.Approved{background:rgba(43,182,115,0.10);color:var(--success)}
+    .status.Declined{background:rgba(224,72,72,0.08);color:var(--danger)}
+
+    /* buttons */
+    .btn{padding:8px 12px;border-radius:10px;border:0;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block}
+    .btn.primary{background:linear-gradient(90deg,var(--primary),var(--accent));color:#fff;box-shadow:0 8px 26px rgba(4,99,177,0.12)}
+    .btn.ghost{background:transparent;border:1px solid rgba(6,78,163,0.06);color:var(--primary)}
+    .btn.success{background:linear-gradient(90deg,#43e97b,#38f9d7);color:#083a21}
+    .btn.danger{background:linear-gradient(90deg,#ff6b6b,#ff8a4a);color:#fff}
+    .compact{font-size:0.92rem;padding:6px 10px}
+
+    .muted{color:var(--muted)}
+    .flex{display:flex;align-items:center;gap:8px}
+    .right{margin-left:auto}
+  </style>
 </head>
 <body>
-
-<div class="dashboard">
+  <div class="wrap">
+    <!-- Sidebar -->
     <aside class="sidebar">
-        <div>
+      <div>
+        <div class="brand">
+          <div class="logo">HC</div>
+          <div>
             <h2>Admin</h2>
-            <div><span style="opacity:.8;font-weight:600;letter-spacing:1px;">Dashboard</span></div>
+            <div class="meta">HospitalCare — Management</div>
+          </div>
         </div>
+
+        <nav class="nav">
+          <a href="#">Overview</a>
+          <a href="#bookings">Bookings</a>
+          <a href="#doctors">Doctors</a>
+        </nav>
+      </div>
+
+      <div>
+        <div class="muted" style="font-size:0.9rem">Signed in as <strong>Administrator</strong></div>
         <a class="logout" href="{{ url_for('admin_logout') }}">Logout</a>
+      </div>
     </aside>
 
-    <main class="main-content">
-        <!-- ALL BOOKINGS -->
-        <section class="section">
-            <div class="section-title">All Booked Appointments</div>
-            <table>
-                <tr>
-                    <th>ID</th>
-                    <th>Patient</th>
-                    <th>Doctor</th>
-                    <th>Date</th>
-                    <th>Time</th>
-                    <th>Reason</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-                {% for a in appointments %}
-                <tr>
-                    <td>{{ a.id }}</td>
-                    <td>{{ a.name }}</td>
-                    <td>{{ a.doctor.name }} ({{ a.doctor.specialization }})</td>
-                    <td>{{ a.date }}</td>
-                    <td>{{ a.time }}</td>
-                    <td>{{ a.reason }}</td>
-                    <td><span class="status {{ a.status }}">{{ a.status }}</span></td>
-                    <td>
-                        {% if a.status == 'Pending' %}
-                        <form action="{{ url_for('approve_booking', id=a.id) }}" method="post" style="display:inline;">
-                            <button type="submit" class="btn approve">Approve</button>
-                        </form>
-                        <form action="{{ url_for('decline_booking', id=a.id) }}" method="post" style="display:inline;">
-                            <button type="submit" class="btn decline">Decline</button>
-                        </form>
-                        {% else %}
-                        <span style="font-weight:600;">{{ a.status }}</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </table>
-        </section>
+    <!-- Main -->
+    <main class="main">
+      <div class="topbar">
+        <div class="search">
+          <input id="searchInput" type="search" placeholder="Search by patient, doctor, reason or date…">
+        </div>
 
-        <!-- APPROVED BOOKINGS -->
-        <section class="section">
-            <div class="section-title">Approved Bookings</div>
-            <table>
-                <tr>
-                    <th>ID</th>
-                    <th>Patient</th>
-                    <th>Doctor</th>
-                    <th>Date</th>
-                    <th>Time</th>
-                    <th>Reason</th>
-                </tr>
-                {% for a in appointments if a.status == 'Approved' %}
-                <tr>
-                    <td>{{ a.id }}</td>
-                    <td>{{ a.name }}</td>
-                    <td>{{ a.doctor.name }} ({{ a.doctor.specialization }})</td>
-                    <td>{{ a.date }}</td>
-                    <td>{{ a.time }}</td>
-                    <td>{{ a.reason }}</td>
-                </tr>
-                {% endfor %}
-            </table>
-        </section>
+        <div class="actions">
+          <a href="{{ url_for('register_doctor') }}" class="btn primary">+ Add Doctor</a>
+          <a class="btn ghost" href="{{ url_for('admin_dashboard') }}">Refresh</a>
+        </div>
+      </div>
 
-        <!-- AVAILABLE DOCTORS -->
-        <section class="section">
-            <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;">
-                <span>Available Doctors</span>
-                <button class="add-doctor-btn" id="openAddDoctorBtn">+ Add Doctor</button>
-            </div>
-            <table id="doctors-table">
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Specialization</th>
-                    <th>Schedule</th>
-                </tr>
-                {% for d in doctors %}
-                <tr class="doctor-row" data-doctor-id="{{ d.id }}">
-                    <td>{{ d.id }}</td>
-                    <td>{{ d.name }}</td>
-                    <td>{{ d.specialization }}</td>
-                    <td>{{ d.schedule }}</td>
-                </tr>
-                {% endfor %}
-            </table>
-        </section>
+      <!-- Statistics -->
+      <div class="stat-grid">
+        <div class="stat card">
+          <div class="label">Total Bookings</div>
+          <div class="value">{{ appointments|length }}</div>
+        </div>
+        <div class="stat card">
+          <div class="label">Pending</div>
+          <div class="value">{{ appointments | selectattr('status','equalto','Pending') | list | length }}</div>
+        </div>
+        <div class="stat card">
+          <div class="label">Approved</div>
+          <div class="value">{{ appointments | selectattr('status','equalto','Approved') | list | length }}</div>
+        </div>
+      </div>
+
+      <!-- Appointments -->
+      <section id="bookings" class="card">
+        <h3>All Booked Appointments</h3>
+        {% if appointments %}
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th><th>Patient</th><th>Doctor</th><th>Date</th><th>Time</th><th>Reason</th><th>Status</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="appointmentsTbody">
+              {% for a in appointments %}
+              <tr>
+                <td>{{ a.id }}</td>
+                <td>{{ a.name }}</td>
+                <td>{{ a.doctor.name }} <span class="muted">({{ a.doctor.specialization }})</span></td>
+                <td>{{ a.date }}</td>
+                <td>{{ a.time }}</td>
+                <td>{{ a.reason }}</td>
+                <td><span class="status {{ a.status }}">{{ a.status }}</span></td>
+                <td>
+                  {% if a.status == 'Pending' %}
+                  <form method="post" action="{{ url_for('approve_booking', id=a.id) }}" style="display:inline">
+                    <button type="submit" class="btn success compact">Approve</button>
+                  </form>
+                  <form method="post" action="{{ url_for('decline_booking', id=a.id) }}" style="display:inline">
+                    <button type="submit" class="btn danger compact">Decline</button>
+                  </form>
+                  {% else %}
+                  <span class="muted compact">{{ a.status }}</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="muted" style="padding:18px">No bookings yet.</div>
+        {% endif %}
+      </section>
+
+      <!-- Doctors -->
+     <!-- Doctors -->
+<section id="doctors" class="card">
+  <div style="display:flex;align-items:center;gap:12px;justify-content:space-between">
+    <h3>Available Doctors</h3>
+    <div class="muted">Click a row to view recent bookings</div>
+  </div>
+
+  <div class="table-wrap" style="margin-top:12px">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Photo</th>
+          <th>Name</th>
+          <th>Specialization</th>
+          <th>Schedule</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in doctors %}
+        <tr>
+          <td>{{ d.id }}</td>
+          <td>
+            {% if d.photo %}
+              <img src="{{ url_for('static', filename=d.photo) }}" alt="{{ d.name }}" width="50" height="50" style="border-radius:50%;object-fit:cover;">
+            {% else %}
+              <span class="muted">No photo</span>
+            {% endif %}
+          </td>
+          <td>{{ d.name }}</td>
+          <td>{{ d.specialization }}</td>
+          <td>{{ d.schedule }}</td>
+          <td class="flex">
+            <a href="{{ url_for('edit_doctor', id=d.id) }}" class="btn primary compact">Edit</a>
+            <form method="post" action="{{ url_for('delete_doctor', id=d.id) }}" style="display:inline" onsubmit="return confirm('Are you sure you want to delete this doctor?');">
+              <button type="submit" class="btn danger compact">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
     </main>
-</div>
-
-<!-- Doctor Info Modal -->
-<div class="modal-bg" id="doctorModal">
-    <div class="modal-content">
-        <button class="modal-close" onclick="closeModal()">&times;</button>
-        <div id="modalInfo"></div>
-        <div class="modal-bookings" id="modalBookings"></div>
-    </div>
-</div>
-
-<!-- Add Doctor Modal -->
-<div class="modal-bg" id="addDoctorModal">
-    <div class="modal-content">
-        <button class="modal-close" onclick="closeAddDoctorModal()">&times;</button>
-        <h3 class="modal-h">Add New Doctor</h3>
-        <form action="{{ url_for('register_doctor') }}" method="post">
-            <label for="doctorName">Name</label>
-            <input id="doctorName" name="name" required>
-
-            <label for="doctorSpecialization">Specialization</label>
-            <input id="doctorSpecialization" name="specialization" required>
-
-            <label for="doctorSchedule">Schedule</label>
-            <input id="doctorSchedule" name="schedule" required>
-
-            <button type="submit">Add Doctor</button>
-        </form>
-    </div>
-</div>
-
-<script>
-    const doctors = [
-        {% for doc in doctors %}
-        { id: `{{ doc.id }}`, name: `{{ doc.name }}`, specialization: `{{ doc.specialization }}`, schedule: `{{ doc.schedule }}` },
-        {% endfor %}
-    ];
-    const appointments = [
-        {% for a in appointments %}
-        { id: `{{ a.id }}`, name: `{{ a.name }}`, doctorId: `{{ a.doctor.id }}`, doctorName: `{{ a.doctor.name }}`, date: `{{ a.date }}`, time: `{{ a.time }}`, reason: `{{ a.reason }}`, status: `{{ a.status }}` },
-        {% endfor %}
-    ];
-    document.querySelectorAll('.doctor-row').forEach(row => {
-        row.onclick = function() {
-            const docId = row.getAttribute('data-doctor-id');
-            showDoctorModal(docId);
-        };
-    });
-    function showDoctorModal(docId) {
-        const doc = doctors.find(d => d.id == docId);
-        if (!doc) return;
-        document.getElementById('modalInfo').innerHTML = `
-            <h3 class="modal-h">${doc.name}</h3>
-            <div class="modal-p"><b>Specialization:</b> ${doc.specialization}<br><b>Schedule:</b> ${doc.schedule}</div>
-        `;
-        const bookings = appointments.filter(a => a.doctorId == docId);
-        let bookingsHTML = '';
-        if (bookings.length === 0) {
-            bookingsHTML = '<em>No previous bookings found.</em>';
-        } else {
-            bookingsHTML = `<table><tr><th>#</th><th>Patient</th><th>Date</th><th>Time</th><th>Reason</th><th>Status</th></tr>`;
-            bookings.forEach(b => {
-                bookingsHTML += `<tr><td>${b.id}</td><td>${b.name}</td><td>${b.date}</td><td>${b.time}</td><td>${b.reason}</td><td>${b.status}</td></tr>`;
-            });
-            bookingsHTML += `</table>`;
-        }
-        document.getElementById('modalBookings').innerHTML = bookingsHTML;
-        document.getElementById('doctorModal').classList.add('active');
-    }
-    function closeModal() { document.getElementById('doctorModal').classList.remove('active'); }
-    document.getElementById('doctorModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
-
-    document.getElementById('openAddDoctorBtn').onclick = function() { document.getElementById('addDoctorModal').classList.add('active'); }
-    function closeAddDoctorModal() { document.getElementById('addDoctorModal').classList.remove('active'); }
-    document.getElementById('addDoctorModal').addEventListener('click', function(e){ if (e.target === this) closeAddDoctorModal(); });
-</script>
+  </div>
 </body>
 </html>

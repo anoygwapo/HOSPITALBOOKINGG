@@ -7,7 +7,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-
     body {
         background: linear-gradient(to right, #00bcd4, #0097a7);
         height: 100vh;
@@ -15,7 +14,6 @@
         justify-content: center;
         align-items: center;
     }
-
     .register-container {
         background: #ffffff;
         width: 420px;
@@ -24,31 +22,26 @@
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         text-align: center;
     }
-
     .register-container h2 {
         color: #007b8f;
         font-weight: 700;
         margin-bottom: 15px;
     }
-
     .register-container p {
         color: #555;
         font-size: 0.9em;
         margin-bottom: 25px;
     }
-
     .input-group {
         text-align: left;
         margin-bottom: 15px;
     }
-
     .input-group label {
         display: block;
         margin-bottom: 5px;
         color: #007b8f;
         font-weight: 500;
     }
-
     .input-group input {
         width: 100%;
         padding: 10px 12px;
@@ -57,13 +50,11 @@
         font-size: 1em;
         transition: 0.3s;
     }
-
     .input-group input:focus {
         border-color: #00bcd4;
         outline: none;
         box-shadow: 0 0 5px rgba(0, 188, 212, 0.5);
     }
-
     .btn-register {
         background-color: #00bcd4;
         color: white;
@@ -76,26 +67,10 @@
         cursor: pointer;
         transition: 0.3s;
     }
-
-    .btn-register:hover {
-        background-color: #0097a7;
-    }
-
-    .footer-text {
-        margin-top: 20px;
-        font-size: 0.9em;
-        color: #666;
-    }
-
-    .footer-text a {
-        color: #00bcd4;
-        text-decoration: none;
-        font-weight: 600;
-    }
-
-    .footer-text a:hover {
-        text-decoration: underline;
-    }
+    .btn-register:hover { background-color: #0097a7; }
+    .footer-text { margin-top: 20px; font-size: 0.9em; color: #666; }
+    .footer-text a { color: #00bcd4; text-decoration: none; font-weight: 600; }
+    .footer-text a:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -103,10 +78,11 @@
     <h2>Doctor Registration</h2>
     <p>Add a new doctor to the system</p>
 
-    <form action="{{ url_for('register_doctor') }}" method="POST">
+    <!-- Form with file upload -->
+    <form action="{{ url_for('register_doctor') }}" method="POST" enctype="multipart/form-data">
         <div class="input-group">
             <label for="name">Full Name</label>
-            <input type="text" id="name" name="name" placeholder="Enter doctor's full name" required>
+            <input type="text" id="name" name="name" placeholder="Enter full name" required>
         </div>
 
         <div class="input-group">
@@ -117,6 +93,12 @@
         <div class="input-group">
             <label for="schedule">Schedule</label>
             <input type="text" id="schedule" name="schedule" placeholder="e.g., Mon-Fri, 9AM-4PM" required>
+        </div>
+
+        <div class="input-group">
+            <label for="photo">Photo</label>
+            <input type="file" id="photo" name="photo" accept="image/*">
+            <small style="color:#777;font-size:0.8em">Choose a profile picture (optional)</small>
         </div>
 
         <button type="submit" class="btn-register">Register Doctor</button>
